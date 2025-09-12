@@ -15,7 +15,7 @@ import { formatCep } from '../utils/cep.util';
  *         required: true
  *         schema:
  *           type: string
- *           pattern: '^\\d{5}-?\\d{3}$'
+ *           pattern: '^[0-9]{5}-?[0-9]{3}$'
  *         description: Brazilian CEP (with or without hyphen)
  *         example: "01310-100"
  *     responses:

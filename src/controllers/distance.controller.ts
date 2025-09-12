@@ -21,12 +21,12 @@ import { DistanceBetweenCepsRequest, DistanceBetweenCoordinatesRequest } from '.
  *             properties:
  *               originCep:
  *                 type: string
- *                 pattern: '^\\d{5}-?\\d{3}$'
+ *                 pattern: '^[0-9]{5}-?[0-9]{3}$'
  *                 example: "01310-100"
  *                 description: Origin CEP
  *               destinationCep:
  *                 type: string
- *                 pattern: '^\\d{5}-?\\d{3}$'
+ *                 pattern: '^[0-9]{5}-?[0-9]{3}$'
  *                 example: "20040-020"
  *                 description: Destination CEP
  *     responses:
