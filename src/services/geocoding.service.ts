@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { GeocodingResult, Coordinates, Address, ErrorCodes } from '../types/api.types';
-import { ViaCepResponse, OpenCageResponse } from '../types/external.types';
+import { ViaCepResponse, OpenCageResponse, NominatimResponse } from '../types/external.types';
 import { formatCep, validateCepOrThrow } from '../utils/cep.util';
 import { retryWithBackoff } from '../utils/response.util';
 import cacheService from './cache.service';
@@ -10,6 +10,7 @@ import winston from 'winston';
 class GeocodingService {
   private viaCepClient: AxiosInstance;
   private openCageClient: AxiosInstance;
+  private nominatimClient: AxiosInstance;
   private logger: winston.Logger;
 
   constructor() {
@@ -21,6 +22,15 @@ class GeocodingService {
     this.openCageClient = axios.create({
       baseURL: 'https://api.opencagedata.com/geocode/v1',
       timeout: 5000,
+    });
+
+    // Nominatim (OpenStreetMap) - Free geocoding service
+    this.nominatimClient = axios.create({
+      baseURL: 'https://nominatim.openstreetmap.org',
+      timeout: 8000,
+      headers: {
+        'User-Agent': 'EON-GEO-API/1.0.0 (https://geo-api.eontecnologia.com)'
+      }
     });
 
     this.logger = winston.createLogger({
@@ -109,11 +119,18 @@ class GeocodingService {
       try {
         return await this.getCoordinatesFromOpenCage(address);
       } catch (error) {
-        this.logger.warn('OpenCage geocoding failed, trying fallback method:', error);
+        this.logger.warn('OpenCage geocoding failed, trying Nominatim fallback:', error);
       }
     }
 
-    // Fallback to basic coordinates estimation for Brazilian addresses
+    // Try Nominatim (OpenStreetMap) as free fallback
+    try {
+      return await this.getCoordinatesFromNominatim(address);
+    } catch (error) {
+      this.logger.warn('Nominatim geocoding failed, using state-based estimation:', error);
+    }
+
+    // Final fallback to basic coordinates estimation for Brazilian addresses
     return this.estimateCoordinatesFromBrazilianAddress(address);
   }
 
@@ -143,6 +160,69 @@ class GeocodingService {
       };
     } catch (error) {
       this.logger.error('OpenCage geocoding error:', error);
+      throw error;
+    }
+  }
+
+  private async getCoordinatesFromNominatim(address: Address): Promise<Coordinates> {
+    try {
+      // Build search query with Brazilian address format
+      const searchParts = [];
+      
+      if (address.logradouro) {
+        searchParts.push(address.logradouro);
+      }
+      if (address.bairro) {
+        searchParts.push(address.bairro);
+      }
+      searchParts.push(address.localidade); // City is always present
+      searchParts.push(address.uf); // State is always present
+      searchParts.push('Brazil');
+
+      const query = searchParts.join(', ');
+      
+      this.logger.info(`Nominatim query: ${query}`);
+
+      const response: AxiosResponse<NominatimResponse[]> = await retryWithBackoff(
+        () => this.nominatimClient.get('/search', {
+          params: {
+            q: query,
+            format: 'json',
+            countrycodes: 'br', // Restrict to Brazil
+            limit: 1,
+            addressdetails: 1,
+            dedupe: 1
+          }
+        }),
+        2, // Only 2 retries for free service
+        2000 // 2 second delay between retries
+      );
+
+      const data = response.data;
+
+      if (!data || data.length === 0) {
+        throw new Error('No results found from Nominatim');
+      }
+
+      const result = data[0];
+      
+      // Nominatim returns string coordinates, convert to numbers
+      const coordinates = {
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon)
+      };
+
+      // Validate coordinates are reasonable for Brazil
+      if (coordinates.latitude < -35 || coordinates.latitude > 5 ||
+          coordinates.longitude < -75 || coordinates.longitude > -30) {
+        throw new Error('Nominatim returned coordinates outside Brazil bounds');
+      }
+
+      this.logger.info(`Nominatim geocoding successful for ${address.localidade}, ${address.uf}`);
+      return coordinates;
+      
+    } catch (error) {
+      this.logger.error('Nominatim geocoding error:', error);
       throw error;
     }
   }
