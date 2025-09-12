@@ -1,4 +1,4 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient, RedisClientType, RedisClientOptions } from 'redis';
 import { CacheEntry } from '../types/api.types';
 import config from '../config';
 import winston from 'winston';
@@ -9,10 +9,30 @@ class CacheService {
   private isConnected: boolean = false;
 
   constructor() {
-    this.client = createClient({ url: config.redis.url });
+    // Configure Redis client options
+    const redisOptions: RedisClientOptions = {
+      url: config.redis.url,
+      socket: {
+        connectTimeout: config.redis.connectionTimeout || 5000,
+        commandTimeout: config.redis.commandTimeout || 3000,
+        reconnectStrategy: (retries) => {
+          // Exponential backoff: wait 2^retries * 100ms, max 5 seconds
+          const delay = Math.min(Math.pow(2, retries) * 100, 5000);
+          this.logger.warn(`Redis reconnection attempt ${retries + 1}, waiting ${delay}ms`);
+          return delay;
+        }
+      },
+      // Enable retry on failure
+      retry_unfulfilled_commands: true,
+    };
+
+    this.client = createClient(redisOptions);
     this.logger = winston.createLogger({
       level: config.logging.level,
-      format: winston.format.json(),
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
       transports: [new winston.transports.Console()],
     });
 

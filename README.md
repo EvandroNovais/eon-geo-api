@@ -70,10 +70,27 @@ npm install
 ```
 
 3. **Configure as variáveis de ambiente:**
+
+**Opção A: Setup automático (recomendado)**
 ```bash
-cp .env.example .env
-# Edite o arquivo .env com suas configurações
+# Execute o script de configuração
+./scripts/setup-env.sh
 ```
+
+**Opção B: Setup manual**
+```bash
+# Para desenvolvimento local
+cp .env.example .env
+
+# Para Redis na nuvem (RedisLab, Railway, etc.)
+cp .env.redislab.example .env
+# Edite o .env com suas credenciais
+```
+
+**⚠️ IMPORTANTE**: 
+- Nunca commite arquivos `.env` no Git
+- Use `.env.example` para documentar variáveis necessárias
+- Para Redis na nuvem, configure `REDIS_URL` com sua string de conexão completa
 
 4. **Inicie o Redis:**
 ```bash
@@ -258,6 +275,47 @@ docker run -p 3000:3000 eon-geo-api
 ```
 
 ## ⚙️ Configuração
+
+### 🔧 Configuração do Redis
+
+A aplicação suporta diferentes configurações de Redis:
+
+#### **Redis Local (Desenvolvimento)**
+```bash
+# Docker Compose (recomendado)
+docker-compose up redis
+
+# Ou Redis local
+redis-server
+```
+
+#### **Redis na Nuvem (Produção)**
+
+**RedisLab/Redis Cloud:**
+```bash
+# No arquivo .env
+REDIS_URL=redis://username:password@your-host.redislabs.com:port/database
+
+# Ou configure individualmente:
+REDIS_HOST=your-host.redislabs.com
+REDIS_PORT=12345
+REDIS_PASSWORD=sua-senha
+REDIS_USERNAME=default
+REDIS_DATABASE=0
+```
+
+**Railway/Render/Heroku:**
+```bash
+# Use a variável de ambiente fornecida pela plataforma
+REDIS_URL=$REDIS_URL
+```
+
+### 🔒 Segurança das Credenciais
+
+- ✅ **Use `.env`** para configurações locais
+- ✅ **Configure variáveis de ambiente** na plataforma de deploy
+- ❌ **Nunca commite** arquivos `.env` no Git
+- ✅ **Use `.env.example`** para documentar variáveis necessárias
 
 ### Variáveis de Ambiente
 

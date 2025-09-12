@@ -3,6 +3,10 @@ dist/
 coverage/
 *.log
 .env
+.env.local
+.env.production
+.env.development
+.env.*.local
 .DS_Store
 Thumbs.db
 .vscode/
@@ -10,3 +14,10 @@ Thumbs.db
 *.tgz
 *.tar.gz
 logs/
+
+# Redis dump files
+dump.rdb
+
+# Temporary files
+*.tmp
+*.temp

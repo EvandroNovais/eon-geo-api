@@ -66,6 +66,8 @@ export interface Config {
   redis: {
     url: string;
     ttl: number;
+    connectionTimeout?: number;
+    commandTimeout?: number;
   };
   rateLimit: {
     windowMs: number;
