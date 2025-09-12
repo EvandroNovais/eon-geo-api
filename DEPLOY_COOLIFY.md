@@ -108,10 +108,15 @@ A aplicação já vem com:
 
 ### Build Failures
 ```bash
-# Se o build falhar, verifique:
+# ✅ RESOLVED: package-lock.json issue
+# The project now includes package-lock.json in Docker build context
+# This ensures reproducible builds with exact dependency versions
+
+# If build still fails, verify:
 1. Node.js versão >= 18.0.0
-2. Todas as dependências estão no package.json
-3. TypeScript compila sem erros
+2. package-lock.json is present in repository
+3. npm ci runs successfully
+4. TypeScript compiles without errors
 ```
 
 ### Connection Issues
