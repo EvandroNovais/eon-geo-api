@@ -80,7 +80,7 @@ public
 .tern-port
 
 # Development files
-src/
+# src/ - NEEDED for TypeScript build, don't exclude!
 tests/
 __tests__/
 *.test.ts
@@ -112,7 +112,7 @@ ehthumbs.db
 Thumbs.db
 
 # Testing
-jest.config.js
+# jest.config.js - NEEDED for build process
 .nyc_output/
 
 # Postman

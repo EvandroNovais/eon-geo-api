@@ -4,7 +4,7 @@ import config from '../config';
 import winston from 'winston';
 
 class CacheService {
-  private client: RedisClientType;
+  private client: RedisClientType<any, any, any>;
   private logger: winston.Logger;
   private isConnected: boolean = false;
 
@@ -14,7 +14,7 @@ class CacheService {
       url: config.redis.url,
       socket: {
         connectTimeout: config.redis.connectionTimeout || 5000,
-        commandTimeout: config.redis.commandTimeout || 3000,
+        // commandTimeout is not a valid option in socket config
         reconnectStrategy: (retries) => {
           // Exponential backoff: wait 2^retries * 100ms, max 5 seconds
           const delay = Math.min(Math.pow(2, retries) * 100, 5000);
@@ -23,7 +23,7 @@ class CacheService {
         }
       },
       // Enable retry on failure
-      retry_unfulfilled_commands: true,
+      commandsQueueMaxLength: 1000,
     };
 
     this.client = createClient(redisOptions);
