@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Redis cache service  
+  redis:
+    image: redis:7-alpine
+    container_name: eon-geo-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    command: redis-server --appendonly yes
+    networks:
+      - eon-geo-dev-network
+
+  # Main API service in development mode
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: eon-geo-api-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOST=0.0.0.0
+      - REDIS_URL=redis://redis:6379
+      - REDIS_TTL=86400
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - dev_logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - eon-geo-dev-network
+
+volumes:
+  redis_data_dev:
+    driver: local
+  dev_logs:
+    driver: local
+
+networks:
+  eon-geo-dev-network:
+    driver: bridge

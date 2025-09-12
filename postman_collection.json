@@ -1,0 +1,332 @@
+{
+  "info": {
+    "_postman_id": "eon-geo-api-collection",
+    "name": "EON GEO API - Geocodificação de CEPs",
+    "description": "Collection para testar a API de geocodificação de CEPs brasileiros",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Get Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Verifica o status da aplicação e serviços externos"
+          },
+          "response": []
+        },
+        {
+          "name": "Get API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Obtém informações básicas da API"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Geocoding",
+      "item": [
+        {
+          "name": "Geocode CEP - São Paulo (01310-100)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/geocoding/cep/01310-100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "geocoding", "cep", "01310-100"]
+            },
+            "description": "Geocodifica o CEP da Avenida Paulista em São Paulo"
+          },
+          "response": []
+        },
+        {
+          "name": "Geocode CEP - Rio de Janeiro (20040-020)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/geocoding/cep/20040020",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "geocoding", "cep", "20040020"]
+            },
+            "description": "Geocodifica o CEP do Centro do Rio de Janeiro (sem hífen)"
+          },
+          "response": []
+        },
+        {
+          "name": "Geocode CEP - Brasília (70040-010)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/geocoding/cep/70040-010",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "geocoding", "cep", "70040-010"]
+            },
+            "description": "Geocodifica o CEP de Brasília"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid CEP Format - Should Return 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/geocoding/cep/123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "geocoding", "cep", "123"]
+            },
+            "description": "Testa validação com CEP inválido"
+          },
+          "response": []
+        },
+        {
+          "name": "Non-existent CEP - Should Return 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/geocoding/cep/99999-999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "geocoding", "cep", "99999-999"]
+            },
+            "description": "Testa CEP que não existe"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Distance Calculation",
+      "item": [
+        {
+          "name": "Distance Between CEPs - SP to RJ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \"originCep\": \"01310-100\",\\n  \"destinationCep\": \"20040-020\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/ceps",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "ceps"]
+            },
+            "description": "Calcula distância entre São Paulo e Rio de Janeiro"
+          },
+          "response": []
+        },
+        {
+          "name": "Distance Between CEPs - SP to Brasília",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"originCep\\": \\"01310100\\",\\n  \\"destinationCep\\": \\"70040010\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/ceps",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "ceps"]
+            },
+            "description": "Calcula distância entre São Paulo e Brasília (CEPs sem hífen)"
+          },
+          "response": []
+        },
+        {
+          "name": "Distance Between Coordinates - SP to RJ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"origin\\": {\\n    \\"latitude\\": -23.5613,\\n    \\"longitude\\": -46.6565\\n  },\\n  \\"destination\\": {\\n    \\"latitude\\": -22.9068,\\n    \\"longitude\\": -43.1729\\n  }\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/coordinates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "coordinates"]
+            },
+            "description": "Calcula distância entre coordenadas de São Paulo e Rio de Janeiro"
+          },
+          "response": []
+        },
+        {
+          "name": "Distance Between Coordinates - International",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"origin\\": {\\n    \\"latitude\\": -23.5613,\\n    \\"longitude\\": -46.6565\\n  },\\n  \\"destination\\": {\\n    \\"latitude\\": 40.7128,\\n    \\"longitude\\": -74.0060\\n  }\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/coordinates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "coordinates"]
+            },
+            "description": "Calcula distância entre São Paulo e Nova York"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Invalid CEP in Distance Calculation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"originCep\\": \\"123\\",\\n  \\"destinationCep\\": \\"20040-020\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/ceps",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "ceps"]
+            },
+            "description": "Testa validação com CEP inválido no cálculo de distância"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Coordinates - Latitude Out of Range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"origin\\": {\\n    \\"latitude\\": -91,\\n    \\"longitude\\": -46.6565\\n  },\\n  \\"destination\\": {\\n    \\"latitude\\": -22.9068,\\n    \\"longitude\\": -43.1729\\n  }\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/coordinates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "coordinates"]
+            },
+            "description": "Testa validação com latitude inválida"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Coordinates - Longitude Out of Range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"origin\\": {\\n    \\"latitude\\": -23.5613,\\n    \\"longitude\\": 181\\n  },\\n  \\"destination\\": {\\n    \\"latitude\\": -22.9068,\\n    \\"longitude\\": -43.1729\\n  }\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/coordinates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "coordinates"]
+            },
+            "description": "Testa validação com longitude inválida"
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\"originCep\\": \\"01310-100\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/distance/ceps",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "distance", "ceps"]
+            },
+            "description": "Testa validação com campos obrigatórios ausentes"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Endpoint - Should Return 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invalid-endpoint",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "invalid-endpoint"]
+            },
+            "description": "Testa endpoint inexistente"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
