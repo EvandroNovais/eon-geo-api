@@ -10,45 +10,64 @@ import geocodingService from '../services/geocoding.service';
  *   get:
  *     summary: Health check endpoint
  *     tags: [Health]
+ *     description: Verifica o status da aplicação e serviços externos (Redis, ViaCEP)
  *     responses:
  *       200:
  *         description: Service is healthy
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
  *                   properties:
- *                     status:
- *                       type: string
- *                       enum: [healthy, unhealthy]
- *                       example: healthy
- *                     timestamp:
- *                       type: string
- *                       format: date-time
- *                     uptime:
- *                       type: number
- *                       example: 3600
- *                       description: Uptime in seconds
- *                     services:
+ *                     data:
  *                       type: object
  *                       properties:
- *                         redis:
+ *                         status:
  *                           type: string
- *                           enum: [connected, disconnected]
- *                           example: connected
- *                         viaCep:
+ *                           enum: [healthy, unhealthy]
+ *                           example: healthy
+ *                           description: Overall health status
+ *                         timestamp:
  *                           type: string
- *                           enum: [available, unavailable]
- *                           example: available
- *                 timestamp:
- *                   type: string
- *                   format: date-time
+ *                           format: date-time
+ *                           example: '2025-09-12T14:00:00.000Z'
+ *                         uptime:
+ *                           type: number
+ *                           example: 3600
+ *                           description: Application uptime in seconds
+ *                         services:
+ *                           type: object
+ *                           properties:
+ *                             redis:
+ *                               type: string
+ *                               enum: [connected, disconnected]
+ *                               example: connected
+ *                               description: Redis cache service status
+ *                             viaCep:
+ *                               type: string
+ *                               enum: [available, unavailable]
+ *                               example: available
+ *                               description: ViaCEP external API status
+ *       503:
+ *         description: Service is unhealthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         status:
+ *                           type: string
+ *                           example: unhealthy
+ *                         services:
+ *                           type: object
+ *                           description: One or more services are not available
  */
 export async function healthCheck(req: Request, res: Response): Promise<void> {
   const startTime = Date.now();

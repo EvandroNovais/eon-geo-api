@@ -33,7 +33,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API de Geocodificação de CEPs',
+      title: 'EON GEO API - Geocodificação de CEPs',
       version: '1.0.0',
       description: 'API RESTful robusta para geocodificação de CEPs brasileiros e cálculo de distâncias entre coordenadas geográficas',
       contact: {
@@ -43,11 +43,19 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://${config.host}:${config.port}/api/v1`,
-        description: 'Development server',
+        url: '/api/v1',
+        description: 'API Base Path',
       },
     ],
     tags: [
+      {
+        name: 'Info',
+        description: 'API information and documentation',
+      },
+      {
+        name: 'Health',
+        description: 'Health check and system status',
+      },
       {
         name: 'Geocoding',
         description: 'CEP geocoding operations',
@@ -56,11 +64,147 @@ const swaggerOptions = {
         name: 'Distance',
         description: 'Distance calculation operations',
       },
-      {
-        name: 'Health',
-        description: 'Health check operations',
-      },
     ],
+    components: {
+      schemas: {
+        Coordinates: {
+          type: 'object',
+          required: ['latitude', 'longitude'],
+          properties: {
+            latitude: {
+              type: 'number',
+              minimum: -90,
+              maximum: 90,
+              example: -23.5613,
+              description: 'Latitude in decimal degrees'
+            },
+            longitude: {
+              type: 'number',
+              minimum: -180,
+              maximum: 180,
+              example: -46.6565,
+              description: 'Longitude in decimal degrees'
+            }
+          }
+        },
+        Address: {
+          type: 'object',
+          properties: {
+            cep: {
+              type: 'string',
+              example: '01310-100',
+              description: 'Brazilian postal code'
+            },
+            logradouro: {
+              type: 'string',
+              example: 'Avenida Paulista',
+              description: 'Street name'
+            },
+            bairro: {
+              type: 'string',
+              example: 'Bela Vista',
+              description: 'Neighborhood'
+            },
+            localidade: {
+              type: 'string',
+              example: 'São Paulo',
+              description: 'City name'
+            },
+            uf: {
+              type: 'string',
+              example: 'SP',
+              description: 'State abbreviation'
+            }
+          }
+        },
+        GeocodingResult: {
+          type: 'object',
+          properties: {
+            coordinates: {
+              '$ref': '#/components/schemas/Coordinates'
+            },
+            address: {
+              '$ref': '#/components/schemas/Address'
+            }
+          }
+        },
+        DistanceResult: {
+          type: 'object',
+          properties: {
+            distance: {
+              type: 'object',
+              properties: {
+                kilometers: {
+                  type: 'number',
+                  example: 357.42,
+                  description: 'Distance in kilometers'
+                },
+                miles: {
+                  type: 'number', 
+                  example: 222.15,
+                  description: 'Distance in miles'
+                }
+              }
+            },
+            origin: {
+              '$ref': '#/components/schemas/Coordinates'
+            },
+            destination: {
+              '$ref': '#/components/schemas/Coordinates'
+            }
+          }
+        },
+        ApiResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            data: {
+              type: 'object',
+              description: 'Response data (varies by endpoint)'
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-09-12T14:00:00.000Z'
+            }
+          }
+        },
+        ApiError: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: false
+            },
+            error: {
+              type: 'object',
+              properties: {
+                code: {
+                  type: 'string',
+                  example: 'INVALID_CEP'
+                },
+                message: {
+                  type: 'string',
+                  example: 'CEP format is invalid'
+                },
+                details: {
+                  type: 'string',
+                  example: 'CEP must contain 8 digits'
+                }
+              }
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-09-12T14:00:00.000Z'
+            }
+          }
+        }
+      }
+    }
   },
   apis: ['./src/controllers/*.ts', './src/routes/*.ts'], // Path to the API docs
 };
@@ -106,13 +250,59 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 // API routes
 app.use('/api/v1', routes);
 
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: API Information
+ *     tags: [Info]
+ *     description: Returns basic information about the EON GEO API
+ *     responses:
+ *       200:
+ *         description: API information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   example: EON GEO API
+ *                 version:
+ *                   type: string
+ *                   example: 1.0.0
+ *                 description:
+ *                   type: string
+ *                 environment:
+ *                   type: string
+ *                   example: production
+ *                 endpoints:
+ *                   type: object
+ *                 documentation:
+ *                   type: string
+ *                   example: /api/docs
+ */
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'EON GEO API - Geocodificação de CEPs',
+    name: 'EON GEO API',
     version: '1.0.0',
-    documentation: `/api/docs`,
-    health: '/api/v1/health',
+    description: 'API RESTful robusta para geocodificação de CEPs brasileiros e cálculo de distâncias entre coordenadas geográficas',
+    environment: config.nodeEnv,
+    endpoints: {
+      health: '/api/v1/health',
+      docs: '/api/docs',
+      geocoding: '/api/v1/geocoding/cep/{cep}',
+      distance: {
+        ceps: '/api/v1/distance/ceps',
+        coordinates: '/api/v1/distance/coordinates'
+      }
+    },
+    documentation: '/api/docs',
+    examples: {
+      geocoding: '/api/v1/geocoding/cep/01310-100',
+      health: '/api/v1/health'
+    }
   });
 });
 
