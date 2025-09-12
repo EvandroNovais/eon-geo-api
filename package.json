@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
+    "build:prod": "npm run lint && npm run test && npm run build",
     "start": "node dist/app.js",
+    "start:prod": "NODE_ENV=production node dist/app.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "docs": "swagger-jsdoc -d swaggerOptions.js -o swagger.json src/routes/*.ts"
+    "docs": "swagger-jsdoc -d swaggerOptions.js -o swagger.json src/routes/*.ts",
+    "healthcheck": "curl -f http://localhost:3000/api/v1/health || exit 1"
   },
   "keywords": [
     "geocoding",

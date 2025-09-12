@@ -6,7 +6,7 @@ dotenv.config();
 
 const config: Config = {
   port: parseInt(process.env.PORT || '3000', 10),
-  host: process.env.HOST || 'localhost',
+  host: process.env.HOST || '0.0.0.0', // Changed for container compatibility
   nodeEnv: process.env.NODE_ENV || 'development',
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
