@@ -43,8 +43,12 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: '/api/v1',
-        description: 'API Base Path',
+        url: '/',
+        description: 'Development Server',
+      },
+      {
+        url: 'https://geo-api.eontecnologia.com',
+        description: 'Production Server',
       },
     ],
     tags: [
@@ -206,13 +210,26 @@ const swaggerOptions = {
       }
     }
   },
-  apis: ['./src/controllers/*.ts', './src/routes/*.ts'], // Path to the API docs
+  apis: [
+    './src/controllers/*.ts', 
+    './src/routes/*.ts',
+    './src/app.ts'
+  ], // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
 
 // CORS configuration
 app.use(cors({
@@ -243,9 +260,27 @@ app.use((req, res, next) => {
 // API documentation
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
-  customCss: '.swagger-ui .topbar { display: none }',
+  customCss: `
+    .swagger-ui .topbar { display: none }
+    .swagger-ui .info { margin: 50px 0 }
+    .swagger-ui .scheme-container { background: none; box-shadow: none; }
+  `,
   customSiteTitle: 'EON GEO API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: 'list',
+    filter: true,
+    showRequestHeaders: true,
+    tryItOutEnabled: true,
+  },
 }));
+
+// Debug endpoint for swagger spec
+app.get('/api/swagger.json', (req, res) => {
+  res.json(swaggerSpec);
+});
 
 // API routes
 app.use('/api/v1', routes);
