@@ -208,19 +208,204 @@ const swaggerOptions = {
           }
         }
       }
+    },
+    paths: {
+      '/api/v1/health': {
+        get: {
+          summary: 'Health check endpoint',
+          tags: ['Health'],
+          description: 'Verifica o status da aplicação e serviços externos (Redis, ViaCEP)',
+          responses: {
+            '200': {
+              description: 'Service is healthy',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              status: { type: 'string', enum: ['healthy', 'unhealthy'], example: 'healthy' },
+                              timestamp: { type: 'string', format: 'date-time' },
+                              uptime: { type: 'number', example: 3600 },
+                              services: {
+                                type: 'object',
+                                properties: {
+                                  redis: { type: 'string', enum: ['connected', 'disconnected'] },
+                                  viaCep: { type: 'string', enum: ['available', 'unavailable'] }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/geocoding/cep/{cep}': {
+        get: {
+          summary: 'Geocodifica um CEP brasileiro',
+          tags: ['Geocoding'],
+          description: 'Converte um CEP brasileiro em coordenadas geográficas',
+          parameters: [
+            {
+              in: 'path',
+              name: 'cep',
+              required: true,
+              schema: { type: 'string', pattern: '^[0-9]{5}-?[0-9]{3}$' },
+              description: 'CEP brasileiro no formato 12345-678 ou 12345678',
+              examples: {
+                paulista: { value: '01310-100', summary: 'Avenida Paulista, São Paulo' },
+                copacabana: { value: '22070-900', summary: 'Copacabana, Rio de Janeiro' }
+              }
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Geocodificação realizada com sucesso',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/GeocodingResult' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Formato de CEP inválido',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ApiError' }
+                }
+              }
+            },
+            '404': {
+              description: 'CEP não encontrado',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ApiError' }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/distance/ceps': {
+        post: {
+          summary: 'Calcula distância entre dois CEPs',
+          tags: ['Distance'],
+          description: 'Calcula a distância geodésica entre dois CEPs brasileiros usando a fórmula de Haversine',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['originCep', 'destinationCep'],
+                  properties: {
+                    originCep: { type: 'string', pattern: '^[0-9]{5}-?[0-9]{3}$', example: '01310-100' },
+                    destinationCep: { type: 'string', pattern: '^[0-9]{5}-?[0-9]{3}$', example: '20040-020' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Distância calculada com sucesso',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/DistanceResult' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            '400': {
+              description: 'Formato de CEP inválido',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ApiError' }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/distance/coordinates': {
+        post: {
+          summary: 'Calcula distância entre coordenadas geográficas',
+          tags: ['Distance'],
+          description: 'Calcula a distância geodésica entre dois pontos usando coordenadas de latitude e longitude',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['origin', 'destination'],
+                  properties: {
+                    origin: { $ref: '#/components/schemas/Coordinates' },
+                    destination: { $ref: '#/components/schemas/Coordinates' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Distância calculada com sucesso',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/DistanceResult' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
-  apis: config.nodeEnv === 'production' 
-    ? [
-        './dist/controllers/*.js', 
-        './dist/routes/*.js',
-        './dist/app.js'
-      ]
-    : [
-        './src/controllers/*.ts', 
-        './src/routes/*.ts',
-        './src/app.ts'
-      ], // Path to the API docs
+  apis: [
+    './src/controllers/*.ts', 
+    './src/routes/*.ts',
+    './src/app.ts'
+  ], // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
