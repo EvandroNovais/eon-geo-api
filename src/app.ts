@@ -210,11 +210,17 @@ const swaggerOptions = {
       }
     }
   },
-  apis: [
-    './src/controllers/*.ts', 
-    './src/routes/*.ts',
-    './src/app.ts'
-  ], // Path to the API docs
+  apis: config.nodeEnv === 'production' 
+    ? [
+        './dist/controllers/*.js', 
+        './dist/routes/*.js',
+        './dist/app.js'
+      ]
+    : [
+        './src/controllers/*.ts', 
+        './src/routes/*.ts',
+        './src/app.ts'
+      ], // Path to the API docs
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
