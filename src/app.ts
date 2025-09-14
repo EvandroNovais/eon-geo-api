@@ -450,7 +450,7 @@ app.use((req, res, next) => {
 });
 
 // API documentation
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null, {
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
   customCss: `
     .swagger-ui .topbar { display: none }
@@ -460,7 +460,6 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null, {
   customSiteTitle: 'EON GEO API Documentation',
   customfavIcon: '/favicon.ico',
   swaggerOptions: {
-    url: '/api/swagger.json',
     persistAuthorization: true,
     displayRequestDuration: true,
     docExpansion: 'list',
