@@ -449,7 +449,7 @@ app.use((req, res, next) => {
 });
 
 // API documentation
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null, {
   explorer: true,
   customCss: `
     .swagger-ui .topbar { display: none }
@@ -459,6 +459,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'EON GEO API Documentation',
   customfavIcon: '/favicon.ico',
   swaggerOptions: {
+    url: '/api/swagger.json',
     persistAuthorization: true,
     displayRequestDuration: true,
     docExpansion: 'list',
@@ -470,7 +471,11 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 // Debug endpoint for swagger spec
 app.get('/api/swagger.json', (req, res) => {
-  res.json(swaggerSpec);
+  res.header('Content-Type', 'application/json; charset=utf-8');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).json(swaggerSpec);
 });
 
 // API routes
