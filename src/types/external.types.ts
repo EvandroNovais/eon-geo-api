@@ -62,6 +62,25 @@ export interface GoogleMapsGeocodingResponse {
   status: string;
 }
 
+export interface GoogleMapsDistanceMatrixResponse {
+  destination_addresses: string[];
+  origin_addresses: string[];
+  rows: Array<{
+    elements: Array<{
+      distance?: {
+        text: string;
+        value: number; // distance in meters
+      };
+      duration?: {
+        text: string;
+        value: number; // duration in seconds
+      };
+      status: string; // OK, NOT_FOUND, ZERO_RESULTS
+    }>;
+  }>;
+  status: string; // OK, INVALID_REQUEST, MAX_ELEMENTS_EXCEEDED, etc.
+}
+
 export interface NominatimResponse {
   place_id: number;
   licence: string;
