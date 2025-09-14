@@ -418,14 +418,15 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"], // Allow fetch to same origin for swagger.json
     },
   },
 }));
 
 // CORS configuration
 app.use(cors({
-  origin: config.nodeEnv === 'production' ? false : '*',
-  methods: ['GET', 'POST'],
+  origin: '*', // Allow all origins for API access
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
