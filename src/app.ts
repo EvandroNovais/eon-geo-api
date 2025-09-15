@@ -61,6 +61,10 @@ const swaggerOptions = {
         description: 'Health check and system status',
       },
       {
+        name: 'Authentication',
+        description: 'API key management and authentication',
+      },
+      {
         name: 'Geocoding',
         description: 'CEP geocoding operations',
       },
@@ -70,6 +74,19 @@ const swaggerOptions = {
       },
     ],
     components: {
+      securitySchemes: {
+        ApiKeyAuth: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Key',
+          description: 'API key for authentication. Get your key from /api/v1/auth/master-key (development) or contact support.'
+        },
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          description: 'Alternative authentication using Bearer token in Authorization header'
+        }
+      },
       schemas: {
         Coordinates: {
           type: 'object',
