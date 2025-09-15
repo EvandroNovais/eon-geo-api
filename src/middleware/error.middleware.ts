@@ -103,6 +103,11 @@ function getStatusCodeForErrorCode(errorCode: ErrorCodes): number {
     [ErrorCodes.INTERNAL_SERVER_ERROR]: 500,
     [ErrorCodes.VALIDATION_ERROR]: 400,
     [ErrorCodes.CACHE_ERROR]: 500,
+    [ErrorCodes.UNAUTHORIZED]: 401,
+    [ErrorCodes.FORBIDDEN]: 403,
+    [ErrorCodes.INVALID_API_KEY]: 401,
+    [ErrorCodes.API_KEY_EXPIRED]: 401,
+    [ErrorCodes.INTERNAL_ERROR]: 500,
   };
 
   return statusMap[errorCode] || 500;
@@ -121,6 +126,11 @@ function getErrorMessage(errorCode: ErrorCodes): string {
     [ErrorCodes.INTERNAL_SERVER_ERROR]: 'Internal server error',
     [ErrorCodes.VALIDATION_ERROR]: 'Validation error',
     [ErrorCodes.CACHE_ERROR]: 'Cache service error',
+    [ErrorCodes.UNAUTHORIZED]: 'Authentication required',
+    [ErrorCodes.FORBIDDEN]: 'Access forbidden',
+    [ErrorCodes.INVALID_API_KEY]: 'Invalid API key',
+    [ErrorCodes.API_KEY_EXPIRED]: 'API key has expired',
+    [ErrorCodes.INTERNAL_ERROR]: 'Internal error',
   };
 
   return messageMap[errorCode] || 'Unknown error';
