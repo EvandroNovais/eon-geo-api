@@ -21,3 +21,8 @@ dump.rdb
 # Temporary files
 *.tmp
 *.temp
+
+# Security: Never commit files with real credentials
+scripts/update-production-env.txt
+scripts/*-credentials*
+*.credentials

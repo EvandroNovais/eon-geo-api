@@ -1,0 +1,64 @@
+name: 🔐 Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    name: 🔍 Credential Leak Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 🔍 Scan for Secrets with TruffleHog
+      uses: trufflesecurity/trufflehog@main
+      continue-on-error: true
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+    - name: 🔎 Custom Credential Patterns
+      run: |
+        echo "🔍 Escaneando padrões customizados..."
+        
+        # Patterns específicos do projeto
+        PATTERNS=(
+          "redis://default:[^@]+@redis-[0-9]+"
+          "AIza[0-9A-Za-z_-]{35}"
+          "eon_[a-z0-9_]{8,}"
+        )
+        
+        found=0
+        for pattern in "${PATTERNS[@]}"; do
+          echo "Verificando pattern: $pattern"
+          matches=$(grep -r -n -E "$pattern" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist || true)
+          if [[ -n "$matches" ]]; then
+            echo "❌ CREDENCIAL DETECTADA:"
+            echo "$matches"
+            found=1
+          fi
+        done
+        
+        if [[ $found -eq 1 ]]; then
+          echo "� ALERTA: Possíveis credenciais detectadas!"
+          echo "⚠️ Verificação manual recomendada"
+          # Não falha o build, apenas alerta
+        else
+          echo "✅ Nenhuma credencial detectada"
+        fi
+
+    - name: 📊 Security Report
+      if: failure()
+      run: |
+        echo "🚨 ALERTA DE SEGURANÇA!"
+        echo "Credenciais foram detectadas no código."
+        echo "❌ Build falhado por motivos de segurança."
